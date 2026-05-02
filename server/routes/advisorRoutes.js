@@ -1,0 +1,11 @@
+const express = require('express');
+const router = express.Router();
+const { getInstructors, sendAdvisorRequest, getAdvisorRequests, updateAdvisorRequest } = require('../controllers/advisorController');
+const { verifyToken, verifyInstructor } = require('../middleware/authMiddleware');
+
+router.get('/', verifyToken, getInstructors);
+router.post('/request', verifyToken, sendAdvisorRequest);
+router.get('/requests', verifyInstructor, getAdvisorRequests);
+router.put('/requests/:id', verifyInstructor, updateAdvisorRequest);
+
+module.exports = router;

@@ -2,8 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const pool = require('./config/db');
-const authRoutes = require('./routes/authRoutes');
-const projectRoutes = require('./routes/projectRoutes');
 
 dotenv.config();
 
@@ -11,8 +9,19 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+// Routes
+const authRoutes = require('./routes/authRoutes');
+const projectRoutes = require('./routes/projectRoutes');
+const applicationRoutes = require('./routes/applicationRoutes');
+const advisorRoutes = require('./routes/advisorRoutes');
+const announcementRoutes = require('./routes/announcementRoutes');
+
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
+app.use('/api/applications', applicationRoutes);
+app.use('/api/advisors', advisorRoutes);
+app.use('/api/announcements', announcementRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Server is running!' });
