@@ -2,31 +2,37 @@ const pool = require('../config/db');
 
 // Get all projects
 const getProjects = async (req, res) => {
-  try {
-    const projects = await pool.query(
-      'SELECT projects.*, users.full_name as owner_name FROM projects JOIN users ON projects.owner_id = users.id ORDER BY projects.created_at DESC'
-    );
-    res.json(projects.rows);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
+    try {
+        const projects = await pool.query(
+            `SELECT projects.*, users.full_name as owner_name,
+  COUNT(project_members.id) as current_members
+  FROM projects 
+  JOIN users ON projects.owner_id = users.id
+  LEFT JOIN project_members ON projects.id = project_members.project_id
+  GROUP BY projects.id, users.full_name
+  ORDER BY projects.created_at DESC`
+        );
+        res.json(projects.rows);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
 };
 
 // Get single project
 const getProject = async (req, res) => {
-  const { id } = req.params;
-  try {
-    const project = await pool.query(
-      'SELECT projects.*, users.full_name as owner_name FROM projects JOIN users ON projects.owner_id = users.id WHERE projects.id = $1',
-      [id]
-    );
-    if (project.rows.length === 0) {
-      return res.status(404).json({ message: 'Project not found' });
+    const { id } = req.params;
+    try {
+        const project = await pool.query(
+            'SELECT projects.*, users.full_name as owner_name FROM projects JOIN users ON projects.owner_id = users.id WHERE projects.id = $1',
+            [id]
+        );
+        if (project.rows.length === 0) {
+            return res.status(404).json({ message: 'Project not found' });
+        }
+        res.json(project.rows[0]);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
-    res.json(project.rows[0]);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
 };
 
 // Create project
@@ -39,6 +45,13 @@ const createProject = async (req, res) => {
       'INSERT INTO projects (owner_id, title, description, project_type, required_skills, team_size, roles_needed, advisor_needed) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
       [owner_id, title, description, project_type, required_skills, team_size, roles_needed, advisor_needed]
     );
+
+    // Add owner to project_members automatically
+    await pool.query(
+      'INSERT INTO project_members (project_id, user_id) VALUES ($1, $2)',
+      [newProject.rows[0].id, owner_id]
+    );
+
     res.status(201).json(newProject.rows[0]);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -47,22 +60,22 @@ const createProject = async (req, res) => {
 
 // Delete project
 const deleteProject = async (req, res) => {
-  const { id } = req.params;
-  const user_id = req.user.id;
+    const { id } = req.params;
+    const user_id = req.user.id;
 
-  try {
-    const project = await pool.query('SELECT * FROM projects WHERE id = $1', [id]);
-    if (project.rows.length === 0) {
-      return res.status(404).json({ message: 'Project not found' });
+    try {
+        const project = await pool.query('SELECT * FROM projects WHERE id = $1', [id]);
+        if (project.rows.length === 0) {
+            return res.status(404).json({ message: 'Project not found' });
+        }
+        if (project.rows[0].owner_id !== user_id) {
+            return res.status(403).json({ message: 'Not authorized' });
+        }
+        await pool.query('DELETE FROM projects WHERE id = $1', [id]);
+        res.json({ message: 'Project deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
     }
-    if (project.rows[0].owner_id !== user_id) {
-      return res.status(403).json({ message: 'Not authorized' });
-    }
-    await pool.query('DELETE FROM projects WHERE id = $1', [id]);
-    res.json({ message: 'Project deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
 };
 
 module.exports = { getProjects, getProject, createProject, deleteProject };
