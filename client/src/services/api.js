@@ -43,3 +43,9 @@ export const getAnnouncements = () => API.get('/announcements');
 export const createAnnouncement = (data) => API.post('/announcements', data);
 export const updateAnnouncement = (id, data) => API.put(`/announcements/${id}`, data);
 export const deleteAnnouncement = (id) => API.delete(`/announcements/${id}`);
+
+// Admin
+export const getUsers = () => API.get('/admin/users');
+export const changeUserRole = (id, data) => API.put(`/admin/users/${id}/role`, data);
+export const deactivateUser = (id) => API.delete(`/admin/users/${id}`);
+export const getAdminStats = () => API.get('/admin/stats');
