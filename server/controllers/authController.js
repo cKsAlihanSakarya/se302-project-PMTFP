@@ -56,7 +56,7 @@ const login = async (req, res) => {
       { expiresIn: '1d' }
     );
 
-    res.json({ token, user: { id: user.rows[0].id, full_name: user.rows[0].full_name, email: user.rows[0].email, role: user.rows[0].role } });
+    res.json({ token, user: { id: user.rows[0].id, full_name: user.rows[0].full_name, email: user.rows[0].email, role: user.rows[0].role, department: user.rows[0].department } });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

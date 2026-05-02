@@ -129,4 +129,17 @@ const updateInstructorProfile = async (req, res) => {
   }
 };
 
-module.exports = { getInstructors, sendAdvisorRequest, getAdvisorRequests, updateAdvisorRequest, getInstructorProfile, updateInstructorProfile };
+// Get projects I'm advising
+const getAdvisingProjects = async (req, res) => {
+  const instructor_id = req.user.id;
+  try {
+    const projects = await pool.query(
+      'SELECT projects.*, users.full_name as owner_name FROM projects JOIN users ON projects.owner_id = users.id WHERE projects.advisor_id = $1',
+      [instructor_id]
+    );
+    res.json(projects.rows);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+module.exports = { getInstructors, sendAdvisorRequest, getAdvisorRequests, updateAdvisorRequest, getInstructorProfile, updateInstructorProfile, getAdvisingProjects };
