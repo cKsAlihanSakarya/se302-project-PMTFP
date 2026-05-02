@@ -16,6 +16,8 @@ API.interceptors.request.use((req) => {
 // Auth
 export const register = (data) => API.post('/auth/register', data);
 export const login = (data) => API.post('/auth/login', data);
+export const getStudentProfile = () => API.get('/auth/profile');
+export const updateStudentProfile = (data) => API.put('/auth/profile', data);
 
 // Projects
 export const getProjects = () => API.get('/projects');

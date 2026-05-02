@@ -62,4 +62,50 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { register, login };
+// Update student profile
+const updateStudentProfile = async (req, res) => {
+  const { year, skills, interests, github_url, linkedin_url, bio } = req.body;
+  const user_id = req.user.id;
+
+  try {
+    // Check if profile exists
+    const existing = await pool.query(
+      'SELECT * FROM student_profiles WHERE user_id = $1', [user_id]
+    );
+
+    if (existing.rows.length > 0) {
+      // Update
+      const updated = await pool.query(
+        'UPDATE student_profiles SET year = $1, skills = $2, interests = $3, github_url = $4, linkedin_url = $5, bio = $6 WHERE user_id = $7 RETURNING *',
+        [year, skills, interests, github_url, linkedin_url, bio, user_id]
+      );
+      res.json(updated.rows[0]);
+    } else {
+      // Insert
+      const newProfile = await pool.query(
+        'INSERT INTO student_profiles (user_id, year, skills, interests, github_url, linkedin_url, bio) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+        [user_id, year, skills, interests, github_url, linkedin_url, bio]
+      );
+      res.status(201).json(newProfile.rows[0]);
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// Get student profile
+const getStudentProfile = async (req, res) => {
+  const user_id = req.user.id;
+
+  try {
+    const profile = await pool.query(
+      'SELECT users.full_name, users.email, users.department, student_profiles.* FROM users LEFT JOIN student_profiles ON users.id = student_profiles.user_id WHERE users.id = $1',
+      [user_id]
+    );
+    res.json(profile.rows[0]);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+module.exports = { register, login, updateStudentProfile, getStudentProfile };
