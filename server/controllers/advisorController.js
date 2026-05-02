@@ -87,4 +87,46 @@ const updateAdvisorRequest = async (req, res) => {
   }
 };
 
-module.exports = { getInstructors, sendAdvisorRequest, getAdvisorRequests, updateAdvisorRequest };
+// Get instructor profile
+const getInstructorProfile = async (req, res) => {
+  const user_id = req.user.id;
+  try {
+    const profile = await pool.query(
+      'SELECT users.full_name, users.email, users.department, instructor_profiles.* FROM users LEFT JOIN instructor_profiles ON users.id = instructor_profiles.user_id WHERE users.id = $1',
+      [user_id]
+    );
+    res.json(profile.rows[0]);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// Update instructor profile
+const updateInstructorProfile = async (req, res) => {
+  const { academic_title, areas_of_expertise, research_interests, previous_project_types, is_available } = req.body;
+  const user_id = req.user.id;
+
+  try {
+    const existing = await pool.query(
+      'SELECT * FROM instructor_profiles WHERE user_id = $1', [user_id]
+    );
+
+    if (existing.rows.length > 0) {
+      const updated = await pool.query(
+        'UPDATE instructor_profiles SET academic_title = $1, areas_of_expertise = $2, research_interests = $3, previous_project_types = $4, is_available = $5 WHERE user_id = $6 RETURNING *',
+        [academic_title, areas_of_expertise, research_interests, previous_project_types, is_available, user_id]
+      );
+      res.json(updated.rows[0]);
+    } else {
+      const newProfile = await pool.query(
+        'INSERT INTO instructor_profiles (user_id, academic_title, areas_of_expertise, research_interests, previous_project_types, is_available) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+        [user_id, academic_title, areas_of_expertise, research_interests, previous_project_types, is_available]
+      );
+      res.status(201).json(newProfile.rows[0]);
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+module.exports = { getInstructors, sendAdvisorRequest, getAdvisorRequests, updateAdvisorRequest, getInstructorProfile, updateInstructorProfile };

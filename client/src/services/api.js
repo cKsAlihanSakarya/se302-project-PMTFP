@@ -31,6 +31,8 @@ export const getProjectApplications = (project_id) => API.get(`/applications/${p
 export const updateApplication = (id, data) => API.put(`/applications/${id}`, data);
 
 // Advisors
+export const getInstructorProfile = () => API.get('/advisors/profile');
+export const updateInstructorProfile = (data) => API.put('/advisors/profile', data);
 export const getInstructors = () => API.get('/advisors');
 export const sendAdvisorRequest = (data) => API.post('/advisors/request', data);
 export const getAdvisorRequests = () => API.get('/advisors/requests');
