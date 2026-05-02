@@ -12,16 +12,24 @@ function Login() {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await login(formData);
-      localStorage.setItem('token', res.data.token);
-      localStorage.setItem('user', JSON.stringify(res.data.user));
+  e.preventDefault();
+  try {
+    const res = await login(formData);
+    localStorage.setItem('token', res.data.token);
+    localStorage.setItem('user', JSON.stringify(res.data.user));
+    
+    const role = res.data.user.role;
+    if (role === 'admin') {
+      navigate('/admin');
+    } else if (role === 'instructor') {
+      navigate('/instructor');
+    } else {
       navigate('/dashboard');
-    } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
     }
-  };
+  } catch (err) {
+    setError(err.response?.data?.message || 'Login failed');
+  }
+};
 
   return (
     <div style={{ maxWidth: '400px', margin: '100px auto', padding: '20px' }}>
