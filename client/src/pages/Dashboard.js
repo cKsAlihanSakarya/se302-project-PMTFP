@@ -29,39 +29,65 @@ function Dashboard() {
   };
 
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto', padding: '20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h2>Welcome, {user?.full_name}</h2>
-        <div>
-          <button onClick={() => navigate('/projects')} style={{ marginRight: '10px', padding: '8px 16px', cursor: 'pointer' }}>Projects</button>
-          <button onClick={() => navigate('/advisors')} style={{ marginRight: '10px', padding: '8px 16px', cursor: 'pointer' }}>Advisors</button>
-          <button onClick={() => navigate('/create-project')} style={{ marginRight: '10px', padding: '8px 16px', background: '#185FA5', color: 'white', border: 'none', cursor: 'pointer' }}>+ New Project</button>
-          <button onClick={handleLogout} style={{ padding: '8px 16px', background: 'red', color: 'white', border: 'none', cursor: 'pointer' }}>Logout</button>
+    <div className="min-h-screen bg-gray-50">
+      {/* Navbar */}
+      <div className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-xs">PM</span>
+          </div>
+          <span className="font-semibold text-gray-800">ProjectMatch</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button onClick={() => navigate('/projects')} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition">Projects</button>
+          <button onClick={() => navigate('/advisors')} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition">Advisors</button>
+          <button onClick={() => navigate('/profile')} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition">Profile</button>
+          <button onClick={() => navigate('/create-project')} className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">+ New Project</button>
+          <button onClick={handleLogout} className="px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition">Logout</button>
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-        <div>
-          <h3>Recent Projects</h3>
-          {projects.map(project => (
-            <div key={project.id} style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '12px', marginBottom: '10px' }}>
-              <h4>{project.title}</h4>
-              <p style={{ color: '#666', fontSize: '13px' }}>{project.project_type} · {project.team_size} members</p>
-              <button onClick={() => navigate('/projects')} style={{ marginTop: '8px', padding: '4px 12px', cursor: 'pointer' }}>View</button>
-            </div>
-          ))}
-        </div>
+      {/* Content */}
+      <div className="max-w-5xl mx-auto px-6 py-8">
+        <h2 className="text-2xl font-bold text-gray-800 mb-1">Welcome, {user?.full_name} 👋</h2>
+        <p className="text-gray-500 text-sm mb-8">Here's what's happening on ProjectMatch.</p>
 
-        <div>
-          <h3>Announcements</h3>
-          {announcements.length === 0 && <p style={{ color: '#666' }}>No announcements yet.</p>}
-          {announcements.map(a => (
-            <div key={a.id} style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '12px', marginBottom: '10px' }}>
-              <h4>{a.title}</h4>
-              <p style={{ color: '#666', fontSize: '13px' }}>{a.category}</p>
-              <p style={{ fontSize: '13px' }}>{a.description}</p>
+        <div className="grid grid-cols-2 gap-6">
+          {/* Projects */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-gray-700">Recent Projects</h3>
+              <button onClick={() => navigate('/projects')} className="text-sm text-blue-600 hover:underline">View all</button>
             </div>
-          ))}
+            {projects.length === 0 && <p className="text-gray-400 text-sm">No projects yet.</p>}
+            {projects.map(project => (
+              <div key={project.id} className="bg-white border border-gray-200 rounded-xl p-4 mb-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs px-2 py-1 bg-blue-50 text-blue-700 rounded-full">{project.project_type}</span>
+                  <span className="text-xs text-gray-400">{project.team_size} members</span>
+                </div>
+                <h4 className="font-medium text-gray-800 text-sm mb-1">{project.title}</h4>
+                <p className="text-gray-500 text-xs">{project.description?.slice(0, 80)}...</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Announcements */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-gray-700">Announcements</h3>
+            </div>
+            {announcements.length === 0 && <p className="text-gray-400 text-sm">No announcements yet.</p>}
+            {announcements.map(a => (
+              <div key={a.id} className="bg-white border border-gray-200 rounded-xl p-4 mb-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs px-2 py-1 bg-amber-50 text-amber-700 rounded-full">{a.category}</span>
+                </div>
+                <h4 className="font-medium text-gray-800 text-sm mb-1">{a.title}</h4>
+                <p className="text-gray-500 text-xs">{a.description}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

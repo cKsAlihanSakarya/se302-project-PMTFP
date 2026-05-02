@@ -32,61 +32,84 @@ function Projects() {
 
   const filtered = filter === 'all' ? projects : projects.filter(p => p.project_type === filter);
 
+  const typeColors = {
+    course: 'bg-amber-50 text-amber-700',
+    tubitak: 'bg-teal-50 text-teal-700',
+    teknofest: 'bg-purple-50 text-purple-700'
+  };
+
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto', padding: '20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h2>Projects</h2>
-        <button onClick={() => navigate('/dashboard')} style={{ padding: '8px 16px', cursor: 'pointer' }}>← Back</button>
-      </div>
-
-      {message && <p style={{ color: 'green', marginBottom: '10px' }}>{message}</p>}
-
-      <div style={{ marginBottom: '16px', display: 'flex', gap: '8px' }}>
-        {['all', 'course', 'tubitak', 'teknofest'].map(type => (
-          <button
-            key={type}
-            onClick={() => setFilter(type)}
-            style={{
-              padding: '6px 14px',
-              cursor: 'pointer',
-              background: filter === type ? '#185FA5' : 'white',
-              color: filter === type ? 'white' : 'black',
-              border: '1px solid #ddd',
-              borderRadius: '20px'
-            }}
-          >
-            {type === 'all' ? 'All' : type.charAt(0).toUpperCase() + type.slice(1)}
-          </button>
-        ))}
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-        {filtered.map(project => (
-          <div key={project.id} style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '16px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-              <span style={{ background: '#E6F1FB', color: '#0C447C', padding: '2px 8px', borderRadius: '20px', fontSize: '12px' }}>
-                {project.project_type}
-              </span>
-              <span style={{ fontSize: '12px', color: '#666' }}>{project.team_size} members</span>
-            </div>
-            <h3 style={{ marginBottom: '6px' }}>{project.title}</h3>
-            <p style={{ color: '#666', fontSize: '13px', marginBottom: '8px' }}>{project.description}</p>
-            <p style={{ fontSize: '12px', color: '#666', marginBottom: '8px' }}>
-              Skills: {project.required_skills?.join(', ')}
-            </p>
-            <p style={{ fontSize: '12px', color: '#666', marginBottom: '10px' }}>
-              Roles: {project.roles_needed?.join(', ')}
-            </p>
-            {user?.role === 'student' && project.owner_id !== user.id && (
-              <button
-                onClick={() => handleApply(project.id)}
-                style={{ padding: '6px 14px', background: '#185FA5', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-              >
-                Apply
-              </button>
-            )}
+    <div className="min-h-screen bg-gray-50">
+      {/* Navbar */}
+      <div className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-xs">PM</span>
           </div>
-        ))}
+          <span className="font-semibold text-gray-800">ProjectMatch</span>
+        </div>
+        <button onClick={() => navigate('/dashboard')} className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition">← Back</button>
+      </div>
+
+      <div className="max-w-5xl mx-auto px-6 py-8">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-800">Projects</h2>
+            <p className="text-gray-500 text-sm">Browse and apply to open projects.</p>
+          </div>
+          {user?.role === 'student' && (
+            <button onClick={() => navigate('/create-project')} className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">+ New Project</button>
+          )}
+        </div>
+
+        {message && (
+          <div className={`px-4 py-3 rounded-lg text-sm mb-4 ${message.includes('success') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
+            {message}
+          </div>
+        )}
+
+        {/* Filters */}
+        <div className="flex gap-2 mb-6">
+          {['all', 'course', 'tubitak', 'teknofest'].map(type => (
+            <button
+              key={type}
+              onClick={() => setFilter(type)}
+              className={`px-4 py-1.5 text-sm rounded-full border transition ${filter === type ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'}`}
+            >
+              {type === 'all' ? 'All' : type.charAt(0).toUpperCase() + type.slice(1)}
+            </button>
+          ))}
+        </div>
+
+        {/* Project Grid */}
+        <div className="grid grid-cols-2 gap-4">
+          {filtered.map(project => (
+            <div key={project.id} className="bg-white border border-gray-200 rounded-xl p-5">
+              <div className="flex items-center justify-between mb-3">
+                <span className={`text-xs px-2 py-1 rounded-full ${typeColors[project.project_type]}`}>
+                  {project.project_type}
+                </span>
+                <span className="text-xs text-gray-400">{project.team_size} members</span>
+              </div>
+              <h3 className="font-semibold text-gray-800 mb-2">{project.title}</h3>
+              <p className="text-gray-500 text-xs mb-3">{project.description}</p>
+              <div className="flex flex-wrap gap-1 mb-3">
+                {project.required_skills?.map(skill => (
+                  <span key={skill} className="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full">{skill}</span>
+                ))}
+              </div>
+              <p className="text-xs text-gray-400 mb-4">Roles: {project.roles_needed?.join(', ')}</p>
+              {user?.role === 'student' && project.owner_id !== user.id && (
+                <button
+                  onClick={() => handleApply(project.id)}
+                  className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                >
+                  Apply
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

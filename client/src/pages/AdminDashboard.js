@@ -53,81 +53,120 @@ function AdminDashboard() {
     navigate('/login');
   };
 
+  const categoryColors = {
+    tubitak: 'bg-teal-50 text-teal-700',
+    teknofest: 'bg-purple-50 text-purple-700',
+    general: 'bg-gray-100 text-gray-600'
+  };
+
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto', padding: '20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h2>Admin Dashboard</h2>
-        <button onClick={handleLogout} style={{ padding: '8px 16px', background: 'red', color: 'white', border: 'none', cursor: 'pointer' }}>Logout</button>
+    <div className="min-h-screen bg-gray-50">
+      {/* Navbar */}
+      <div className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 bg-red-500 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-xs">PM</span>
+          </div>
+          <span className="font-semibold text-gray-800">ProjectMatch</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-500">{user?.full_name}</span>
+          <span className="text-xs px-2 py-1 bg-red-50 text-red-600 rounded-full">Admin</span>
+          <button onClick={handleLogout} className="px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition">Logout</button>
+        </div>
       </div>
 
-      {message && <p style={{ color: 'green', marginBottom: '10px' }}>{message}</p>}
+      <div className="max-w-5xl mx-auto px-6 py-8">
+        <h2 className="text-2xl font-bold text-gray-800 mb-1">Admin Dashboard</h2>
+        <p className="text-gray-500 text-sm mb-8">Manage announcements and platform settings.</p>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-        <div>
-          <h3>Create Announcement</h3>
-          <form onSubmit={handleCreate} style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '16px' }}>
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ display: 'block', marginBottom: '4px' }}>Title</label>
-              <input
-                type="text"
-                name="title"
-                value={formData.title}
-                onChange={handleChange}
-                style={{ width: '100%', padding: '8px' }}
-                required
-              />
-            </div>
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ display: 'block', marginBottom: '4px' }}>Description</label>
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                style={{ width: '100%', padding: '8px', height: '80px' }}
-              />
-            </div>
-            <div style={{ marginBottom: '10px' }}>
-              <label style={{ display: 'block', marginBottom: '4px' }}>Category</label>
-              <select
-                name="category"
-                value={formData.category}
-                onChange={handleChange}
-                style={{ width: '100%', padding: '8px' }}
-              >
-                <option value="tubitak">TÜBİTAK</option>
-                <option value="teknofest">Teknofest</option>
-                <option value="general">General</option>
-              </select>
-            </div>
-            <button
-              type="submit"
-              style={{ width: '100%', padding: '8px', background: '#D85A30', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
-            >
-              Create Announcement
-            </button>
-          </form>
-        </div>
+        {message && (
+          <div className={`px-4 py-3 rounded-lg text-sm mb-6 ${message.includes('success') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
+            {message}
+          </div>
+        )}
 
-        <div>
-          <h3>Announcements</h3>
-          {announcements.length === 0 && <p style={{ color: '#666' }}>No announcements yet.</p>}
-          {announcements.map(a => (
-            <div key={a.id} style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '12px', marginBottom: '10px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
-                  <h4 style={{ margin: '0 0 4px 0' }}>{a.title}</h4>
-                  <p style={{ color: '#666', fontSize: '12px', margin: '0 0 4px 0' }}>{a.category}</p>
-                  <p style={{ fontSize: '13px', margin: 0 }}>{a.description}</p>
-                </div>
-                <button
-                  onClick={() => handleDelete(a.id)}
-                  style={{ padding: '4px 10px', background: '#FCEBEB', color: '#791F1F', border: '1px solid #F09595', borderRadius: '4px', cursor: 'pointer', whiteSpace: 'nowrap' }}
-                >
-                  Delete
-                </button>
+        <div className="grid grid-cols-2 gap-6">
+          {/* Create Announcement */}
+          <div>
+            <h3 className="font-semibold text-gray-700 mb-4">Create Announcement</h3>
+            <form onSubmit={handleCreate} className="bg-white border border-gray-200 rounded-xl p-5 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <input
+                  type="text"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleChange}
+                  placeholder="e.g. TÜBİTAK Application Deadline"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
+                  required
+                />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  placeholder="Announcement details..."
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400 h-24 resize-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
+                >
+                  <option value="tubitak">TÜBİTAK</option>
+                  <option value="teknofest">Teknofest</option>
+                  <option value="general">General</option>
+                </select>
+              </div>
+              <button
+                type="submit"
+                className="w-full py-2 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition"
+              >
+                Publish Announcement
+              </button>
+            </form>
+          </div>
+
+          {/* Announcements List */}
+          <div>
+            <h3 className="font-semibold text-gray-700 mb-4">Announcements ({announcements.length})</h3>
+            {announcements.length === 0 && (
+              <div className="bg-white border border-gray-200 rounded-xl p-8 text-center">
+                <p className="text-gray-400 text-sm">No announcements yet.</p>
+              </div>
+            )}
+            <div className="space-y-3">
+              {announcements.map(a => (
+                <div key={a.id} className="bg-white border border-gray-200 rounded-xl p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${categoryColors[a.category] || 'bg-gray-100 text-gray-600'}`}>
+                          {a.category}
+                        </span>
+                      </div>
+                      <h4 className="font-medium text-gray-800 text-sm mb-1">{a.title}</h4>
+                      <p className="text-gray-500 text-xs">{a.description}</p>
+                    </div>
+                    <button
+                      onClick={() => handleDelete(a.id)}
+                      className="ml-3 px-3 py-1.5 text-xs bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 transition"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
       </div>
     </div>
