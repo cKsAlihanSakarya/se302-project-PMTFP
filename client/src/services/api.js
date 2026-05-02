@@ -16,8 +16,9 @@ API.interceptors.request.use((req) => {
 // Auth
 export const register = (data) => API.post('/auth/register', data);
 export const login = (data) => API.post('/auth/login', data);
-export const getStudentProfile = () => API.get('/auth/profile');
-export const updateStudentProfile = (data) => API.put('/auth/profile', data);
+export const getStudentProfile = () => API.get('/auth/profile/me');
+export const updateStudentProfile = (data) => API.put('/auth/profile/me', data);
+export const getStudentProfileById = (id) => API.get(`/auth/profile/${id}`);
 
 // Projects
 export const getProjects = () => API.get('/projects');
@@ -29,6 +30,7 @@ export const deleteProject = (id) => API.delete(`/projects/${id}`);
 export const applyToProject = (data) => API.post('/applications', data);
 export const getProjectApplications = (project_id) => API.get(`/applications/${project_id}`);
 export const updateApplication = (id, data) => API.put(`/applications/${id}`, data);
+export const getMyProjectsApplications = () => API.get('/applications');
 
 // Advisors
 export const getInstructorProfile = () => API.get('/advisors/profile');

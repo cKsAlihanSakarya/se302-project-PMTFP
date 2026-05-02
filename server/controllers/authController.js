@@ -108,4 +108,21 @@ const getStudentProfile = async (req, res) => {
   }
 };
 
-module.exports = { register, login, updateStudentProfile, getStudentProfile };
+// Get any student profile by id
+const getStudentProfileById = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const profile = await pool.query(
+      'SELECT users.full_name, users.email, users.department, student_profiles.* FROM users LEFT JOIN student_profiles ON users.id = student_profiles.user_id WHERE users.id = $1',
+      [id]
+    );
+    if (profile.rows.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json(profile.rows[0]);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+module.exports = { register, login, updateStudentProfile, getStudentProfile, getStudentProfileById };

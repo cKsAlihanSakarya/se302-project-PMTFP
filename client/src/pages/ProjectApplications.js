@@ -63,8 +63,14 @@ function ProjectApplications() {
             <div key={app.id} className="bg-white border border-gray-200 rounded-xl p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="font-semibold text-gray-800 mb-1">{app.full_name}</h4>
-                  <p className="text-gray-500 text-sm mb-1">{app.email}</p>
+                  <h4 className="font-semibold text-gray-800 mb-1">
+                    <button
+                      onClick={() => navigate(`/student/${app.applicant_id}`)}
+                      className="hover:text-blue-600 hover:underline transition"
+                    >
+                      {app.full_name}
+                    </button>
+                  </h4>
                   <p className="text-gray-500 text-sm">{app.department}</p>
                 </div>
                 <div className="flex items-center gap-3">

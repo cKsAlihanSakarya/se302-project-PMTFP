@@ -10,6 +10,7 @@ import Profile from './pages/Profile';
 import InstructorDashboard from './pages/InstructorDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import ProjectApplications from './pages/ProjectApplications';
+import StudentProfile from './pages/StudentProfile';
 
 const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem('token');
@@ -39,6 +40,7 @@ function App() {
         <Route path="/applications/:project_id" element={<PrivateRoute><ProjectApplications /></PrivateRoute>} />
         <Route path="/instructor" element={<RoleRoute role="instructor"><InstructorDashboard /></RoleRoute>} />
         <Route path="/admin" element={<RoleRoute role="admin"><AdminDashboard /></RoleRoute>} />
+        <Route path="/student/:id" element={<PrivateRoute><StudentProfile /></PrivateRoute>} />
       </Routes>
     </Router>
   );

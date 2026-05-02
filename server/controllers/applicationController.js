@@ -79,4 +79,28 @@ const updateApplication = async (req, res) => {
   }
 };
 
-module.exports = { applyToProject, getProjectApplications, updateApplication };
+// Get all applications to my projects
+const getMyProjectsApplications = async (req, res) => {
+  const owner_id = req.user.id;
+  try {
+    const applications = await pool.query(
+      `SELECT project_applications.*, 
+      projects.title as project_title, 
+      projects.project_type,
+      users.full_name as applicant_name,
+      users.email as applicant_email,
+      users.department as applicant_department
+      FROM project_applications 
+      JOIN projects ON project_applications.project_id = projects.id 
+      JOIN users ON project_applications.applicant_id = users.id
+      WHERE projects.owner_id = $1 
+      ORDER BY project_applications.created_at DESC`,
+      [owner_id]
+    );
+    res.json(applications.rows);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+module.exports = { applyToProject, getProjectApplications, updateApplication, getMyProjectsApplications };

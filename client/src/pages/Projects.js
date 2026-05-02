@@ -6,6 +6,7 @@ function Projects() {
     const [projects, setProjects] = useState([]);
     const [filter, setFilter] = useState('all');
     const [message, setMessage] = useState('');
+    const [appliedProjects, setAppliedProjects] = useState([]);
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem('user'));
 
@@ -25,6 +26,7 @@ function Projects() {
         try {
             await applyToProject({ project_id });
             setMessage('Applied successfully!');
+            setAppliedProjects([...appliedProjects, project_id]);
         } catch (err) {
             setMessage(err.response?.data?.message || 'Application failed');
         }
@@ -40,7 +42,6 @@ function Projects() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Navbar */}
             <div className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -68,7 +69,6 @@ function Projects() {
                     </div>
                 )}
 
-                {/* Filters */}
                 <div className="flex gap-2 mb-6">
                     {['all', 'course', 'tubitak', 'teknofest'].map(type => (
                         <button
@@ -81,7 +81,6 @@ function Projects() {
                     ))}
                 </div>
 
-                {/* Project Grid */}
                 <div className="grid grid-cols-2 gap-4">
                     {filtered.map(project => (
                         <div key={project.id} className="bg-white border border-gray-200 rounded-xl p-5">
@@ -102,10 +101,14 @@ function Projects() {
                             <div className="flex gap-2">
                                 {user?.role === 'student' && project.owner_id !== user.id && (
                                     <button
-                                        onClick={() => handleApply(project.id)}
-                                        className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                                        onClick={() => !appliedProjects.includes(project.id) && handleApply(project.id)}
+                                        className={`px-4 py-2 text-sm rounded-lg transition ${
+                                            appliedProjects.includes(project.id)
+                                                ? 'bg-green-50 text-green-700 border border-green-200 cursor-default'
+                                                : 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer'
+                                        }`}
                                     >
-                                        Apply
+                                        {appliedProjects.includes(project.id) ? '✓ Applied' : 'Apply'}
                                     </button>
                                 )}
                                 {user?.role === 'student' && project.owner_id === user.id && (
