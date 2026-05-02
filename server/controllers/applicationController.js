@@ -6,7 +6,6 @@ const applyToProject = async (req, res) => {
   const applicant_id = req.user.id;
 
   try {
-    // Check if already applied
     const alreadyApplied = await pool.query(
       'SELECT * FROM project_applications WHERE project_id = $1 AND applicant_id = $2',
       [project_id, applicant_id]
@@ -31,7 +30,6 @@ const getProjectApplications = async (req, res) => {
   const user_id = req.user.id;
 
   try {
-    // Check if user is project owner
     const project = await pool.query(
       'SELECT * FROM projects WHERE id = $1 AND owner_id = $2',
       [project_id, user_id]
@@ -57,7 +55,6 @@ const updateApplication = async (req, res) => {
   const user_id = req.user.id;
 
   try {
-    // Check if user is project owner
     const application = await pool.query(
       'SELECT project_applications.*, projects.owner_id FROM project_applications JOIN projects ON project_applications.project_id = projects.id WHERE project_applications.id = $1',
       [id]
@@ -73,6 +70,24 @@ const updateApplication = async (req, res) => {
       'UPDATE project_applications SET status = $1 WHERE id = $2 RETURNING *',
       [status, id]
     );
+
+    // Eğer kabul edildiyse project_members'a ekle
+    if (status === 'accepted') {
+      const { project_id, applicant_id } = application.rows[0];
+
+      // Zaten üye değilse ekle
+      const alreadyMember = await pool.query(
+        'SELECT * FROM project_members WHERE project_id = $1 AND user_id = $2',
+        [project_id, applicant_id]
+      );
+      if (alreadyMember.rows.length === 0) {
+        await pool.query(
+          'INSERT INTO project_members (project_id, user_id) VALUES ($1, $2)',
+          [project_id, applicant_id]
+        );
+      }
+    }
+
     res.json(updated.rows[0]);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
