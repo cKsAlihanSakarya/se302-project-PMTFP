@@ -58,3 +58,5 @@ export const getAdminStats = () => API.get('/admin/stats');
 export const getCategories = () => API.get('/categories');
 export const createCategory = (data) => API.post('/categories', data);
 export const deleteCategory = (id) => API.delete(`/categories/${id}`);
+
+export const getMyOwnApplications = () => API.get('/applications/my-applications');
