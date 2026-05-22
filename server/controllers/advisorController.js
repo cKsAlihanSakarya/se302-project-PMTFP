@@ -19,7 +19,6 @@ const sendAdvisorRequest = async (req, res) => {
   const student_id = req.user.id;
 
   try {
-    // Check if already sent
     const alreadySent = await pool.query(
       'SELECT * FROM advisor_requests WHERE project_id = $1 AND instructor_id = $2',
       [project_id, instructor_id]
@@ -53,6 +52,27 @@ const getAdvisorRequests = async (req, res) => {
   }
 };
 
+// Get my advisor requests (student sees this)
+const getMyAdvisorRequests = async (req, res) => {
+  const student_id = req.user.id;
+
+  try {
+    const requests = await pool.query(
+      `SELECT advisor_requests.*, 
+        projects.title as project_title, 
+        users.full_name as instructor_name
+       FROM advisor_requests 
+       JOIN projects ON advisor_requests.project_id = projects.id 
+       JOIN users ON advisor_requests.instructor_id = users.id 
+       WHERE advisor_requests.student_id = $1`,
+      [student_id]
+    );
+    res.json(requests.rows);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
 // Accept or reject advisor request
 const updateAdvisorRequest = async (req, res) => {
   const { id } = req.params;
@@ -73,7 +93,6 @@ const updateAdvisorRequest = async (req, res) => {
       [status, id]
     );
 
-    // If accepted, assign advisor to project
     if (status === 'accepted') {
       await pool.query(
         'UPDATE projects SET advisor_id = $1 WHERE id = $2',
@@ -142,4 +161,5 @@ const getAdvisingProjects = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
-module.exports = { getInstructors, sendAdvisorRequest, getAdvisorRequests, updateAdvisorRequest, getInstructorProfile, updateInstructorProfile, getAdvisingProjects };
+
+module.exports = { getInstructors, sendAdvisorRequest, getAdvisorRequests, updateAdvisorRequest, getInstructorProfile, updateInstructorProfile, getAdvisingProjects, getMyAdvisorRequests };

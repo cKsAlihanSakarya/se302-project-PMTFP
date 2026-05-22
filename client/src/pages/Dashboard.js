@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getProjects, getAnnouncements, getMyProjectsApplications, getAdvisorRequests } from '../services/api';
+import { getProjects, getAnnouncements, getMyProjectsApplications, getMyAdvisorRequests } from '../services/api';
 
 function Dashboard() {
     const [projects, setProjects] = useState([]);
     const [announcements, setAnnouncements] = useState([]);
     const [myApplications, setMyApplications] = useState([]);
-    const [myOwnApplications, setMyOwnApplications] = useState([]);
     const [advisorRequests, setAdvisorRequests] = useState([]);
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem('user'));
@@ -20,18 +19,11 @@ function Dashboard() {
                 setAnnouncements(announcementsRes.data.slice(0, 3));
 
                 if (user?.role === 'student') {
-                    // Kendi projelerime gelen başvurular (owner olarak)
                     const applicationsRes = await getMyProjectsApplications();
                     setMyApplications(applicationsRes.data);
 
-                    // Benim başvurduğum projeler (applicant olarak)
-                    const allApps = applicationsRes.data;
-                    const myOwn = projectsRes.data.flatMap(() => []);
-
-                    // Advisor request durumlarını getir
                     try {
-                        const advisorRes = await getAdvisorRequests();
-                        // Sadece accepted veya rejected olanları göster
+                        const advisorRes = await getMyAdvisorRequests();
                         setAdvisorRequests(advisorRes.data.filter(r => r.status !== 'pending'));
                     } catch (e) {}
                 }
@@ -42,7 +34,6 @@ function Dashboard() {
         fetchData();
     }, []);
 
-    // Bildirimler: kabul/red edilen başvurular + advisor request cevapları
     const notifications = [
         ...myApplications
             .filter(app => app.status === 'accepted' || app.status === 'rejected')
@@ -91,7 +82,6 @@ function Dashboard() {
                 <h2 className="text-2xl font-bold text-gray-800 mb-1">Welcome, {user?.full_name} 👋</h2>
                 <p className="text-gray-500 text-sm mb-6">Here's what's happening on ProjectMatch.</p>
 
-                {/* Bildirimler */}
                 {user?.role === 'student' && notifications.length > 0 && (
                     <div className="mb-6">
                         <h3 className="font-semibold text-gray-700 mb-3">🔔 Notifications</h3>

@@ -40,6 +40,7 @@ export const sendAdvisorRequest = (data) => API.post('/advisors/request', data);
 export const getAdvisorRequests = () => API.get('/advisors/requests');
 export const updateAdvisorRequest = (id, data) => API.put(`/advisors/requests/${id}`, data);
 export const getAdvisingProjects = () => API.get('/advisors/advising');
+export const getMyAdvisorRequests = () => API.get('/advisors/my-requests');
 
 // Announcements
 export const getAnnouncements = () => API.get('/announcements');
