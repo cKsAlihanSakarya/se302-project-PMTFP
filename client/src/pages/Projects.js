@@ -74,7 +74,6 @@ function Projects() {
                     </div>
                 )}
 
-                {/* Dinamik filtreler */}
                 <div className="flex gap-2 mb-6 flex-wrap">
                     <button
                         onClick={() => setFilter('all')}
@@ -109,7 +108,10 @@ function Projects() {
                                     <span key={skill} className="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full">{skill}</span>
                                 ))}
                             </div>
-                            <p className="text-xs text-gray-400 mb-4">Roles: {project.roles_needed?.join(', ')}</p>
+                            <p className="text-xs text-gray-400 mb-2">Roles: {project.roles_needed?.join(', ')}</p>
+                            {project.advisor_name && (
+                                <p className="text-xs text-green-600 mb-3">🎓 Advisor: {project.advisor_name}</p>
+                            )}
                             <div className="flex gap-2">
                                 {user?.role === 'student' && project.owner_id !== user.id && (
                                     <button

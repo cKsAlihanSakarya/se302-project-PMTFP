@@ -4,12 +4,15 @@ const pool = require('../config/db');
 const getProjects = async (req, res) => {
     try {
         const projects = await pool.query(
-            `SELECT projects.*, users.full_name as owner_name,
-  COUNT(project_members.id) as current_members
+            `SELECT projects.*, 
+  users.full_name as owner_name,
+  COUNT(project_members.id) as current_members,
+  advisor.full_name as advisor_name
   FROM projects 
   JOIN users ON projects.owner_id = users.id
   LEFT JOIN project_members ON projects.id = project_members.project_id
-  GROUP BY projects.id, users.full_name
+  LEFT JOIN users advisor ON projects.advisor_id = advisor.id
+  GROUP BY projects.id, users.full_name, advisor.full_name
   ORDER BY projects.created_at DESC`
         );
         res.json(projects.rows);
@@ -46,7 +49,6 @@ const createProject = async (req, res) => {
       [owner_id, title, description, project_type, required_skills, team_size, roles_needed, advisor_needed]
     );
 
-    // Add owner to project_members automatically
     await pool.query(
       'INSERT INTO project_members (project_id, user_id) VALUES ($1, $2)',
       [newProject.rows[0].id, owner_id]
