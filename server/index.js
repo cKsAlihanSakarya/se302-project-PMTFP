@@ -17,6 +17,7 @@ const applicationRoutes = require('./routes/applicationRoutes');
 const advisorRoutes = require('./routes/advisorRoutes');
 const announcementRoutes = require('./routes/announcementRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const categoryRoutes = require('./routes/categoryRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
@@ -24,6 +25,7 @@ app.use('/api/applications', applicationRoutes);
 app.use('/api/advisors', advisorRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/categories', categoryRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Server is running!' });

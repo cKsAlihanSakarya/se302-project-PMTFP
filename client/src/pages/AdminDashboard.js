@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getAnnouncements, createAnnouncement, deleteAnnouncement, getUsers, changeUserRole, deactivateUser, getAdminStats } from '../services/api';
+import { getAnnouncements, createAnnouncement, deleteAnnouncement, getUsers, changeUserRole, deactivateUser, getAdminStats, getCategories, createCategory, deleteCategory } from '../services/api';
 
 function AdminDashboard() {
   const [announcements, setAnnouncements] = useState([]);
   const [users, setUsers] = useState([]);
   const [stats, setStats] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [newCategory, setNewCategory] = useState('');
   const [formData, setFormData] = useState({ title: '', description: '', category: 'tubitak' });
   const [message, setMessage] = useState('');
   const [activeTab, setActiveTab] = useState('announcements');
@@ -21,6 +23,8 @@ function AdminDashboard() {
         setUsers(usersRes.data);
         const statsRes = await getAdminStats();
         setStats(statsRes.data);
+        const categoriesRes = await getCategories();
+        setCategories(categoriesRes.data);
       } catch (err) {
         console.error(err);
       }
@@ -75,6 +79,29 @@ function AdminDashboard() {
     }
   };
 
+  const handleCreateCategory = async (e) => {
+    e.preventDefault();
+    if (!newCategory.trim()) return;
+    try {
+      const res = await createCategory({ name: newCategory.trim() });
+      setCategories([...categories, res.data]);
+      setNewCategory('');
+      setMessage('Category created successfully!');
+    } catch (err) {
+      setMessage(err.response?.data?.message || 'Failed to create category');
+    }
+  };
+
+  const handleDeleteCategory = async (id) => {
+    try {
+      await deleteCategory(id);
+      setCategories(categories.filter(c => c.id !== id));
+      setMessage('Category deleted successfully!');
+    } catch (err) {
+      setMessage('Failed to delete category');
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -112,7 +139,6 @@ function AdminDashboard() {
       <div className="max-w-5xl mx-auto px-6 py-8">
         <h2 className="text-2xl font-bold text-gray-800 mb-6">Admin Dashboard</h2>
 
-        {/* Stats */}
         {stats && (
           <div className="grid grid-cols-4 gap-4 mb-8">
             <div className="bg-white border border-gray-200 rounded-xl p-4">
@@ -147,6 +173,12 @@ function AdminDashboard() {
             className={`px-4 py-2 text-sm rounded-lg transition ${activeTab === 'announcements' ? 'bg-red-500 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}
           >
             Announcements
+          </button>
+          <button
+            onClick={() => setActiveTab('categories')}
+            className={`px-4 py-2 text-sm rounded-lg transition ${activeTab === 'categories' ? 'bg-red-500 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+          >
+            Project Categories
           </button>
           <button
             onClick={() => setActiveTab('users')}
@@ -195,6 +227,45 @@ function AdminDashboard() {
                       </div>
                       <button onClick={() => handleDelete(a.id)} className="ml-3 px-3 py-1.5 text-xs bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 transition">Delete</button>
                     </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Categories Tab */}
+        {activeTab === 'categories' && (
+          <div className="grid grid-cols-2 gap-6">
+            <div>
+              <h3 className="font-semibold text-gray-700 mb-4">Add New Category</h3>
+              <form onSubmit={handleCreateCategory} className="bg-white border border-gray-200 rounded-xl p-5 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Category Name</label>
+                  <input
+                    type="text"
+                    value={newCategory}
+                    onChange={(e) => setNewCategory(e.target.value)}
+                    placeholder="e.g. erasmus"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
+                    required
+                  />
+                </div>
+                <button type="submit" className="w-full py-2 bg-red-500 text-white rounded-lg font-medium hover:bg-red-600 transition">Add Category</button>
+              </form>
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-700 mb-4">Categories ({categories.length})</h3>
+              <div className="space-y-2">
+                {categories.map(c => (
+                  <div key={c.id} className="bg-white border border-gray-200 rounded-xl px-4 py-3 flex items-center justify-between">
+                    <span className="text-sm font-medium text-gray-700 capitalize">{c.name}</span>
+                    <button
+                      onClick={() => handleDeleteCategory(c.id)}
+                      className="text-xs px-3 py-1 bg-red-50 text-red-600 border border-red-200 rounded-lg hover:bg-red-100 transition"
+                    >
+                      Delete
+                    </button>
                   </div>
                 ))}
               </div>

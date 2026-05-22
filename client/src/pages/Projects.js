@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getProjects, applyToProject } from '../services/api';
+import { getProjects, applyToProject, getCategories } from '../services/api';
 
 function Projects() {
     const [projects, setProjects] = useState([]);
+    const [categories, setCategories] = useState([]);
     const [filter, setFilter] = useState('all');
     const [message, setMessage] = useState('');
     const [appliedProjects, setAppliedProjects] = useState([]);
@@ -11,15 +12,17 @@ function Projects() {
     const user = JSON.parse(localStorage.getItem('user'));
 
     useEffect(() => {
-        const fetchProjects = async () => {
+        const fetchData = async () => {
             try {
                 const res = await getProjects();
                 setProjects(res.data);
+                const catRes = await getCategories();
+                setCategories(catRes.data);
             } catch (err) {
                 console.error(err);
             }
         };
-        fetchProjects();
+        fetchData();
     }, []);
 
     const handleApply = async (project_id) => {
@@ -39,6 +42,8 @@ function Projects() {
         tubitak: 'bg-teal-50 text-teal-700',
         teknofest: 'bg-purple-50 text-purple-700'
     };
+
+    const getTypeColor = (type) => typeColors[type] || 'bg-gray-100 text-gray-600';
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -69,14 +74,21 @@ function Projects() {
                     </div>
                 )}
 
-                <div className="flex gap-2 mb-6">
-                    {['all', 'course', 'tubitak', 'teknofest'].map(type => (
+                {/* Dinamik filtreler */}
+                <div className="flex gap-2 mb-6 flex-wrap">
+                    <button
+                        onClick={() => setFilter('all')}
+                        className={`px-4 py-1.5 text-sm rounded-full border transition ${filter === 'all' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'}`}
+                    >
+                        All
+                    </button>
+                    {categories.map(cat => (
                         <button
-                            key={type}
-                            onClick={() => setFilter(type)}
-                            className={`px-4 py-1.5 text-sm rounded-full border transition ${filter === type ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'}`}
+                            key={cat.id}
+                            onClick={() => setFilter(cat.name)}
+                            className={`px-4 py-1.5 text-sm rounded-full border transition ${filter === cat.name ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'}`}
                         >
-                            {type === 'all' ? 'All' : type.charAt(0).toUpperCase() + type.slice(1)}
+                            {cat.name.charAt(0).toUpperCase() + cat.name.slice(1)}
                         </button>
                     ))}
                 </div>
@@ -85,7 +97,7 @@ function Projects() {
                     {filtered.map(project => (
                         <div key={project.id} className="bg-white border border-gray-200 rounded-xl p-5">
                             <div className="flex items-center justify-between mb-3">
-                                <span className={`text-xs px-2 py-1 rounded-full ${typeColors[project.project_type]}`}>
+                                <span className={`text-xs px-2 py-1 rounded-full ${getTypeColor(project.project_type)}`}>
                                     {project.project_type}
                                 </span>
                                 <span className="text-xs text-gray-400">{project.current_members}/{project.team_size} members</span>

@@ -1,19 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createProject } from '../services/api';
+import { createProject, getCategories } from '../services/api';
 
 function CreateProject() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    project_type: 'course',
+    project_type: '',
     required_skills: '',
     team_size: '',
     roles_needed: '',
     advisor_needed: false
   });
+  const [categories, setCategories] = useState([]);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await getCategories();
+        setCategories(res.data);
+        if (res.data.length > 0) {
+          setFormData(prev => ({ ...prev, project_type: res.data[0].name }));
+        }
+      } catch (err) {
+        console.error('Failed to fetch categories');
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const handleChange = (e) => {
     const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
@@ -38,7 +54,6 @@ function CreateProject() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Navbar */}
       <div className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -89,10 +104,11 @@ function CreateProject() {
               value={formData.project_type}
               onChange={handleChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
             >
-              <option value="course">Course Project</option>
-              <option value="tubitak">TÜBİTAK Student Project</option>
-              <option value="teknofest">Teknofest Student Project</option>
+              {categories.map(c => (
+                <option key={c.id} value={c.name}>{c.name.charAt(0).toUpperCase() + c.name.slice(1)}</option>
+              ))}
             </select>
           </div>
 
