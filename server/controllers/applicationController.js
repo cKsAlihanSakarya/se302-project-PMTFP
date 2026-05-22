@@ -71,11 +71,8 @@ const updateApplication = async (req, res) => {
       [status, id]
     );
 
-    // Eğer kabul edildiyse project_members'a ekle
     if (status === 'accepted') {
       const { project_id, applicant_id } = application.rows[0];
-
-      // Zaten üye değilse ekle
       const alreadyMember = await pool.query(
         'SELECT * FROM project_members WHERE project_id = $1 AND user_id = $2',
         [project_id, applicant_id]
@@ -94,7 +91,7 @@ const updateApplication = async (req, res) => {
   }
 };
 
-// Get all applications to my projects
+// Get all applications to my projects (owner olarak)
 const getMyProjectsApplications = async (req, res) => {
   const owner_id = req.user.id;
   try {
@@ -118,4 +115,24 @@ const getMyProjectsApplications = async (req, res) => {
   }
 };
 
-module.exports = { applyToProject, getProjectApplications, updateApplication, getMyProjectsApplications };
+// Get my own applications (applicant olarak — bildirim için)
+const getMyOwnApplications = async (req, res) => {
+  const applicant_id = req.user.id;
+  try {
+    const applications = await pool.query(
+      `SELECT project_applications.*, 
+      projects.title as project_title,
+      projects.project_type
+      FROM project_applications 
+      JOIN projects ON project_applications.project_id = projects.id 
+      WHERE project_applications.applicant_id = $1
+      ORDER BY project_applications.created_at DESC`,
+      [applicant_id]
+    );
+    res.json(applications.rows);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+module.exports = { applyToProject, getProjectApplications, updateApplication, getMyProjectsApplications, getMyOwnApplications };

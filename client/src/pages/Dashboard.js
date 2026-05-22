@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getProjects, getAnnouncements, getMyProjectsApplications, getMyAdvisorRequests } from '../services/api';
+import { getProjects, getAnnouncements, getMyProjectsApplications, getMyAdvisorRequests, getMyOwnApplications } from '../services/api';
 
 function Dashboard() {
     const [projects, setProjects] = useState([]);
     const [announcements, setAnnouncements] = useState([]);
     const [myApplications, setMyApplications] = useState([]);
+    const [myOwnApplications, setMyOwnApplications] = useState([]);
     const [advisorRequests, setAdvisorRequests] = useState([]);
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem('user'));
@@ -23,6 +24,11 @@ function Dashboard() {
                     setMyApplications(applicationsRes.data);
 
                     try {
+                        const ownAppsRes = await getMyOwnApplications();
+                        setMyOwnApplications(ownAppsRes.data.filter(a => a.status !== 'pending'));
+                    } catch (e) {}
+
+                    try {
                         const advisorRes = await getMyAdvisorRequests();
                         setAdvisorRequests(advisorRes.data.filter(r => r.status !== 'pending'));
                     } catch (e) {}
@@ -35,16 +41,13 @@ function Dashboard() {
     }, []);
 
     const notifications = [
-        ...myApplications
-            .filter(app => app.status === 'accepted' || app.status === 'rejected')
-            .filter(app => app.applicant_id === user?.id)
-            .map(app => ({
-                id: `app-${app.id}`,
-                type: app.status === 'accepted' ? 'success' : 'error',
-                message: app.status === 'accepted'
-                    ? `✅ Your application to "${app.project_title}" was accepted!`
-                    : `❌ Your application to "${app.project_title}" was rejected.`
-            })),
+        ...myOwnApplications.map(app => ({
+            id: `app-${app.id}`,
+            type: app.status === 'accepted' ? 'success' : 'error',
+            message: app.status === 'accepted'
+                ? `✅ Your application to "${app.project_title}" was accepted!`
+                : `❌ Your application to "${app.project_title}" was rejected.`
+        })),
         ...advisorRequests.map(r => ({
             id: `advisor-${r.id}`,
             type: r.status === 'accepted' ? 'success' : 'error',
