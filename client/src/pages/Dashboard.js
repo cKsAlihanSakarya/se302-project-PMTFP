@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getProjects, getAnnouncements, getMyProjectsApplications } from '../services/api';
+import { getProjects, getAnnouncements, getMyProjectsApplications, getAdvisorRequests } from '../services/api';
 
 function Dashboard() {
     const [projects, setProjects] = useState([]);
     const [announcements, setAnnouncements] = useState([]);
     const [myApplications, setMyApplications] = useState([]);
+    const [myOwnApplications, setMyOwnApplications] = useState([]);
+    const [advisorRequests, setAdvisorRequests] = useState([]);
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem('user'));
 
@@ -16,9 +18,22 @@ function Dashboard() {
                 const announcementsRes = await getAnnouncements();
                 setProjects(projectsRes.data.slice(0, 3));
                 setAnnouncements(announcementsRes.data.slice(0, 3));
+
                 if (user?.role === 'student') {
+                    // Kendi projelerime gelen başvurular (owner olarak)
                     const applicationsRes = await getMyProjectsApplications();
                     setMyApplications(applicationsRes.data);
+
+                    // Benim başvurduğum projeler (applicant olarak)
+                    const allApps = applicationsRes.data;
+                    const myOwn = projectsRes.data.flatMap(() => []);
+
+                    // Advisor request durumlarını getir
+                    try {
+                        const advisorRes = await getAdvisorRequests();
+                        // Sadece accepted veya rejected olanları göster
+                        setAdvisorRequests(advisorRes.data.filter(r => r.status !== 'pending'));
+                    } catch (e) {}
                 }
             } catch (err) {
                 console.error(err);
@@ -26,6 +41,27 @@ function Dashboard() {
         };
         fetchData();
     }, []);
+
+    // Bildirimler: kabul/red edilen başvurular + advisor request cevapları
+    const notifications = [
+        ...myApplications
+            .filter(app => app.status === 'accepted' || app.status === 'rejected')
+            .filter(app => app.applicant_id === user?.id)
+            .map(app => ({
+                id: `app-${app.id}`,
+                type: app.status === 'accepted' ? 'success' : 'error',
+                message: app.status === 'accepted'
+                    ? `✅ Your application to "${app.project_title}" was accepted!`
+                    : `❌ Your application to "${app.project_title}" was rejected.`
+            })),
+        ...advisorRequests.map(r => ({
+            id: `advisor-${r.id}`,
+            type: r.status === 'accepted' ? 'success' : 'error',
+            message: r.status === 'accepted'
+                ? `🎓 Your advisor request for "${r.project_title}" was accepted!`
+                : `❌ Your advisor request for "${r.project_title}" was rejected.`
+        }))
+    ];
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -53,7 +89,21 @@ function Dashboard() {
 
             <div className="max-w-5xl mx-auto px-6 py-8">
                 <h2 className="text-2xl font-bold text-gray-800 mb-1">Welcome, {user?.full_name} 👋</h2>
-                <p className="text-gray-500 text-sm mb-8">Here's what's happening on ProjectMatch.</p>
+                <p className="text-gray-500 text-sm mb-6">Here's what's happening on ProjectMatch.</p>
+
+                {/* Bildirimler */}
+                {user?.role === 'student' && notifications.length > 0 && (
+                    <div className="mb-6">
+                        <h3 className="font-semibold text-gray-700 mb-3">🔔 Notifications</h3>
+                        <div className="space-y-2">
+                            {notifications.map(n => (
+                                <div key={n.id} className={`px-4 py-3 rounded-lg text-sm ${n.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-600 border border-red-200'}`}>
+                                    {n.message}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 <div className="grid grid-cols-2 gap-6">
                     <div>
@@ -134,7 +184,14 @@ function Dashboard() {
                                                     'bg-amber-50 text-amber-700'
                                                 }`}>{app.project_type}</span>
                                             </td>
-                                            <td className="px-4 py-3 text-gray-800">{app.applicant_name}</td>
+                                            <td className="px-4 py-3 text-gray-800">
+                                                <button
+                                                    onClick={() => navigate(`/student/${app.applicant_id}`)}
+                                                    className="text-blue-600 hover:underline"
+                                                >
+                                                    {app.applicant_name}
+                                                </button>
+                                            </td>
                                             <td className="px-4 py-3 text-gray-500 text-xs">{app.applicant_department}</td>
                                             <td className="px-4 py-3">
                                                 <span className={`text-xs px-2 py-1 rounded-full ${
